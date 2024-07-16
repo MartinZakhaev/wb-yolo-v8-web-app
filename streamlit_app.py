@@ -37,14 +37,24 @@ if 'txt_data' not in st.session_state:
 if 'file_name' not in st.session_state:
     st.session_state.file_name = None
 
+# Reset session state if the uploaded file is removed
+if uploaded_file is None:
+    st.session_state.uploaded_file = None
+    st.session_state.processed = False
+    st.session_state.annotated_img_path = None
+    st.session_state.txt_data = None
+    st.session_state.file_name = None
+
 # Process the uploaded file
 if uploaded_file is not None:
+    # Reset session state variables for new upload
+    if st.session_state.uploaded_file != uploaded_file:
+        st.session_state.processed = False
+        st.session_state.annotated_img_path = None
+        st.session_state.txt_data = None
+    
     st.session_state.uploaded_file = uploaded_file
     st.session_state.file_name = os.path.splitext(uploaded_file.name)[0]
-
-# Display the image
-if st.session_state.annotated_img_path is not None:
-    output_image.image(st.session_state.annotated_img_path, caption="Output Annotated Image", use_column_width=True)
 
 if st.session_state.uploaded_file is not None:
     # Convert the uploaded file to an image
@@ -53,6 +63,10 @@ if st.session_state.uploaded_file is not None:
 
     # Display the input image
     input_image.image(img_array, caption="Input Image", use_column_width=True)
+
+    # Display the image
+    if st.session_state.annotated_img_path is not None:
+        output_image.image(st.session_state.annotated_img_path, caption="Output Annotated Image", use_column_width=True)
 
     # Use columns for buttons to make them span the full width of their respective columns
     col4, col5 = st.columns([1, 1])
