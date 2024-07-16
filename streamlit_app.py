@@ -15,8 +15,7 @@ col1 = st.container()
 col2, col3 = st.columns(2)
 
 with col1:
-    uploaded_file = st.file_uploader(
-        "Select Image", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("Select Image", type=["jpg", "jpeg", "png"])
 
 with col2:
     st.header("Input")
@@ -35,10 +34,13 @@ if 'annotated_img_path' not in st.session_state:
     st.session_state.annotated_img_path = None
 if 'txt_data' not in st.session_state:
     st.session_state.txt_data = None
+if 'file_name' not in st.session_state:
+    st.session_state.file_name = None
 
 # Process the uploaded file
 if uploaded_file is not None:
     st.session_state.uploaded_file = uploaded_file
+    st.session_state.file_name = os.path.splitext(uploaded_file.name)[0]
 
 # Display the image
 if st.session_state.annotated_img_path is not None:
@@ -76,7 +78,7 @@ if st.session_state.uploaded_file is not None:
         annotated_img = cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB)
 
         # Save the annotated image
-        st.session_state.annotated_img_path = "annotated_image.jpg"
+        st.session_state.annotated_img_path = f"{st.session_state.file_name}_annotated.jpg"
         annotated_img_rgb = cv2.cvtColor(annotated_img, cv2.COLOR_RGB2BGR)
         cv2.imwrite(st.session_state.annotated_img_path, annotated_img_rgb)
 
@@ -104,9 +106,9 @@ if st.session_state.uploaded_file is not None:
         zip_buffer = io.BytesIO()
         with ZipFile(zip_buffer, 'w') as zip_file:
             # Add the annotated image to the zip file
-            zip_file.write(st.session_state.annotated_img_path, arcname="annotated_image.jpg")
+            zip_file.write(st.session_state.annotated_img_path, arcname=f"{st.session_state.file_name}_annotated.jpg")
             # Add the results text file to the zip file
-            zip_file.writestr("results.txt", st.session_state.txt_data)
+            zip_file.writestr(f"{st.session_state.file_name}_results.txt", st.session_state.txt_data)
         zip_buffer.seek(0)
 
         with col5:
@@ -114,6 +116,6 @@ if st.session_state.uploaded_file is not None:
                 label="Download Results",
                 use_container_width=True,
                 data=zip_buffer,
-                file_name="results.zip",
+                file_name=f"{st.session_state.file_name}.zip",
                 mime="application/zip"
             )
